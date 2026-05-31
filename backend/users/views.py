@@ -3,6 +3,8 @@ from django.shortcuts import render
 from rest_framework import generics, permissions
 from .serializers import RegisterSerializer, ProfileUpdateSerializer, UserSerializer
 from django.contrib.auth import get_user_model
+from .models import TechStack, Team, Comment
+from .serializers import CommentSerializer
 
 User = get_user_model()
 
@@ -17,4 +19,17 @@ class ProfileView(generics.RetrieveUpdateAPIView):
 
     def get_object(self):
         return self.request.user
-# Create your views here.
+
+
+class CommentViewSet(viewsets.ModelViewSet):
+    serializer_class = CommentSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def get_queryset(self):
+        team_id = self.request.query_params.get('team')
+        if team_id:
+            return Comment.objects.filter(team_id=team_id)
+        return Comment.objects.all()
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)

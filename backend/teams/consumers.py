@@ -1,7 +1,11 @@
+# backend/teams/consumers.py
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
-from .models import Team
+from .models import Team, Comment
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 
 class TeamConsumer(AsyncWebsocketConsumer):
@@ -30,7 +34,9 @@ class TeamConsumer(AsyncWebsocketConsumer):
 
     async def receive(self, text_data):
         data = json.loads(text_data)
-        if data.get('type') == 'increment_views':
+        message_type = data.get('type')
+
+        if message_type == 'increment_views':
             await self.update_views()
             views = await self.get_views_count()
             await self.channel_layer.group_send(
@@ -41,10 +47,28 @@ class TeamConsumer(AsyncWebsocketConsumer):
                 }
             )
 
+        elif message_type == 'new_comment':
+            # Сохраняем комментарий
+            comment = await self.save_comment(data.get('text'), data.get('user_id'))
+            # Рассылаем всем в комнате
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    'type': 'new_comment',
+                    'comment': comment
+                }
+            )
+
     async def views_updated(self, event):
         await self.send(text_data=json.dumps({
             'type': 'views_updated',
             'views': event['views']
+        }))
+
+    async def new_comment(self, event):
+        await self.send(text_data=json.dumps({
+            'type': 'new_comment',
+            'comment': event['comment']
         }))
 
     @database_sync_to_async
@@ -57,3 +81,19 @@ class TeamConsumer(AsyncWebsocketConsumer):
     def get_views_count(self):
         team = Team.objects.get(pk=self.team_id)
         return team.views
+
+    @database_sync_to_async
+    def save_comment(self, text, user_id):
+        team = Team.objects.get(pk=self.team_id)
+        user = User.objects.get(pk=user_id)
+        comment = Comment.objects.create(
+            team=team,
+            author=user,
+            text=text
+        )
+        return {
+            'id': comment.id,
+            'text': comment.text,
+            'author_name': user.username,
+            'created_at': comment.created_at.strftime('%d.%m.%Y %H:%M')
+        }
