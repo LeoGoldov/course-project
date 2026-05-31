@@ -6,6 +6,7 @@ import Login from './components/Login';
 import TeamList from './pages/TeamList';
 import CreateTeam from './pages/CreateTeam';
 import EditTeam from './pages/EditTeam';
+import TeamDetail from './pages/TeamDetail';
 
 function Layout({ children }) {
   const { user, logout, isAuthenticated } = useAuth();
@@ -93,6 +94,11 @@ function AppRoutes() {
           <Navigate to="/login" />
         )
       } />
+      <Route path="/teams/:id" element={
+  <Layout>
+    <TeamDetail />
+  </Layout>
+} />
     </Routes>
   );
 }
