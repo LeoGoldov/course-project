@@ -6,14 +6,13 @@ from django.urls import path
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 
-# Пока закомментируем, позже добавим
-# from teams import consumers
+from teams import consumers
 
 application = ProtocolTypeRouter({
     "http": get_asgi_application(),
     "websocket": AuthMiddlewareStack(
         URLRouter([
-            # path("ws/teams/<int:team_id>/", consumers.TeamConsumer.as_asgi()),
+            path("ws/teams/<int:team_id>/", consumers.TeamConsumer.as_asgi()),
         ])
     ),
 })
