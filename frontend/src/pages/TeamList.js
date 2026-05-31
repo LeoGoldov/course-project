@@ -82,16 +82,18 @@ function TeamList() {
           <ul style={{ listStyle: 'none', padding: 0 }}>
             {teams.map(team => (
               <li key={team.id} style={{
-                border: '1px solid #ddd',
-                borderRadius: '8px',
-                padding: '15px',
-                marginBottom: '15px',
-                backgroundColor: '#fff'
+                border: '1px solid rgba(255,255,255,0.2)',
+  borderRadius: '12px',
+  padding: '20px',
+  marginBottom: '15px',
+  backgroundColor: 'rgba(0, 0, 0, 0.6)',
+  color: 'white',           // ← главное тут
+
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
-                  <Link to={`/teams/${team.id}`} style={{ textDecoration: 'none', color: '#333' }}>
-                    <strong style={{ fontSize: '18px' }}>{team.title}</strong>
-                  </Link>
+                  <Link to={`/teams/${team.id}`} style={{ textDecoration: 'none', color: 'white' }}>
+  <strong style={{ fontSize: '18px' }}>{team.title}</strong>
+</Link>
 
                   {user && team.captain_name === user.username && (
                     <Link to={`/teams/${team.id}/edit`}>
