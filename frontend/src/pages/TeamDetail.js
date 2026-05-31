@@ -1,4 +1,4 @@
-// frontend/src/pages/TeamDetail.js
+// frontend/src/pages/TeamDetail.js (упрощённая версия)
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -40,34 +40,32 @@ function TeamDetail() {
       .catch(err => console.error('Ошибка загрузки комментариев:', err));
   }, [id]);
 
-  // WebSocket соединение
+  // WebSocket ТОЛЬКО для комментариев
   useEffect(() => {
     const ws = new WebSocket(`ws://localhost:8000/ws/teams/${id}/`);
     wsRef.current = ws;
 
     ws.onopen = () => {
-      console.log('WebSocket connected');
+      console.log('✅ WebSocket connected');
       setIsConnected(true);
-      ws.send(JSON.stringify({ type: 'increment_views' }));
     };
 
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
-      if (data.type === 'views_updated') {
-        setViews(data.views);
-      } else if (data.type === 'new_comment') {
-        // Оптимистичное обновление: добавляем комментарий сразу
+      console.log('📨 WebSocket message:', data);
+
+      if (data.type === 'new_comment') {
         setComments(prev => [...prev, data.comment]);
       }
     };
 
     ws.onerror = (error) => {
-      console.error('WebSocket error:', error);
+      console.error('❌ WebSocket error:', error);
       setIsConnected(false);
     };
 
     ws.onclose = () => {
-      console.log('WebSocket disconnected');
+      console.log('🔌 WebSocket disconnected');
       setIsConnected(false);
     };
 
@@ -78,11 +76,19 @@ function TeamDetail() {
     };
   }, [id]);
 
+  // Увеличение просмотров через REST API (один раз при загрузке)
+  useEffect(() => {
+    axios.post(`/api/teams/${id}/increment_views/`)
+      .then(response => {
+        setViews(response.data.views);
+      })
+      .catch(err => console.error('Ошибка увеличения просмотров:', err));
+  }, [id]);
+
   const handleSendComment = (e) => {
     e.preventDefault();
     if (!newComment.trim() || !user) return;
 
-    // Оптимистичное обновление: добавляем временный комментарий
     const tempComment = {
       id: Date.now(),
       text: newComment,
@@ -91,7 +97,6 @@ function TeamDetail() {
     };
     setComments(prev => [...prev, tempComment]);
 
-    // Отправляем через WebSocket
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
       wsRef.current.send(JSON.stringify({
         type: 'new_comment',
@@ -99,12 +104,11 @@ function TeamDetail() {
         user_id: user.id
       }));
     } else {
-      // Fallback: через REST API
       axios.post('/api/comments/', {
         team: parseInt(id),
         text: newComment
       }).then(response => {
-        setComments(prev => [...prev.filter(c => c.id !== tempComment.id), response.data]);
+        setComments(prev => prev.map(c => c.id === tempComment.id ? response.data : c));
       }).catch(err => {
         console.error('Ошибка:', err);
         setComments(prev => prev.filter(c => c.id !== tempComment.id));
@@ -137,10 +141,7 @@ function TeamDetail() {
 
       <p><strong>Стек:</strong> {team.stack_title || 'не указан'}</p>
       <p><strong>Капитан:</strong> {team.captain_name}</p>
-      <p>
-        <strong>👁️ Просмотров:</strong> {views}
-        {isConnected && <span style={{ color: 'green', marginLeft: '10px' }}>● Live</span>}
-      </p>
+      <p><strong>👁️ Просмотров:</strong> {views}</p>
 
       <h3>Описание:</h3>
       <div style={{ background: '#f5f5f5', padding: '15px', borderRadius: '8px' }}>
@@ -179,7 +180,6 @@ function TeamDetail() {
           )}
         </div>
 
-        {/* Форма добавления комментария */}
         {user ? (
           <form onSubmit={handleSendComment} style={{ display: 'flex', gap: '10px' }}>
             <input
