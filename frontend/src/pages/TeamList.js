@@ -67,7 +67,9 @@ function TeamList() {
               marginBottom: '15px'
             }}>
               <div>
-                <strong style={{ fontSize: '18px' }}>{team.title}</strong>
+                <Link to={`/teams/${team.id}`} style={{ textDecoration: 'none', color: '#333' }}>
+  <strong style={{ fontSize: '18px' }}>{team.title}</strong>
+</Link>
 
                 {/* Кнопка редактирования — только для капитана */}
                 // Временно — показываем кнопку ВСЕМ авторизованным пользователям
