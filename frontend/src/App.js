@@ -8,51 +8,32 @@ import CreateTeam from './pages/CreateTeam';
 import EditTeam from './pages/EditTeam';
 import TeamDetail from './pages/TeamDetail';
 
+// frontend/src/App.js (добавить обёртку с классом)
 function Layout({ children }) {
   const { user, logout, isAuthenticated } = useAuth();
 
   return (
-    <div style={{ padding: '20px' }}>
+    <div className="content-wrapper">
       <div style={{
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
         marginBottom: '20px',
         borderBottom: '1px solid #ccc',
-        paddingBottom: '10px'
+        paddingBottom: '10px',
+
       }}>
-        <Link to="/" style={{ textDecoration: 'none', fontSize: '24px', color: '#333' }}>
-          🏆 Банк резюме команд разработчиков
+        <Link to="/" style={{ textDecoration: 'none', fontSize: '24px', color: 'white',  marginLeft: '40%' }}>
+          Resume-Web
         </Link>
         {isAuthenticated ? (
           <div>
             <span style={{ marginRight: '15px' }}>Привет, {user?.username}!</span>
-            <button
-              onClick={logout}
-              style={{
-                padding: '8px 16px',
-                backgroundColor: '#dc3545',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer'
-              }}
-            >
-              Выйти
-            </button>
+            <button onClick={logout}>Выйти</button>
           </div>
         ) : (
-          <Link to="/login" style={{ textDecoration: 'none' }}>
-            <button style={{
-              padding: '8px 16px',
-              backgroundColor: '#007bff',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer'
-            }}>
-              Войти
-            </button>
+          <Link to="/login">
+            <button>Войти</button>
           </Link>
         )}
       </div>
