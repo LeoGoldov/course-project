@@ -117,17 +117,39 @@ function TeamDetail() {
 
     setNewComment('');
   };
+// В TeamDetail.js, замените блок isCaptain на это:
 
+{isCaptain && (
+  <div style={{ marginTop: '20px' }}>
+    <button onClick={() => navigate(`/teams/${id}/edit`)} style={{ marginRight: '10px' }}>
+      ✏️ Редактировать
+    </button>
+    <button
+      onClick={togglePublish}
+      style={{
+        backgroundColor: team.is_published ? '#ffc107' : '#28a745',
+        color: 'black',
+        marginRight: '10px'
+      }}
+    >
+      {team.is_published ? '📥 Снять с публикации' : '📢 Опубликовать'}
+    </button>
+  </div>
+)}
+
+// togglePublish:
+const togglePublish = async () => {
+  try {
+    const response = await axios.patch(`/api/teams/${id}/`, {
+      is_published: !team.is_published
+    });
+    setTeam({ ...team, is_published: response.data.is_published });
+  } catch (err) {
+    alert('Ошибка при изменении статуса');
+  }
+};
   // Функция удаления команды
-  const handleDelete = async () => {
-    if (!window.confirm('Вы уверены, что хотите удалить эту команду?')) return;
-    try {
-      await axios.delete(`/api/teams/${id}/`);
-      navigate('/');
-    } catch (err) {
-      alert('Ошибка при удалении');
-    }
-  };
+
 
 // Добавьте функцию togglePublish перед return:
 const togglePublish = async () => {
