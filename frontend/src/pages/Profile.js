@@ -41,7 +41,6 @@ function Profile() {
     setMessage('');
 
     try {
-      // Отправляем только те поля, которые есть в сериализаторе
       const dataToSend = {
         first_name: formData.first_name,
         last_name: formData.last_name,
@@ -50,12 +49,12 @@ function Profile() {
         phone: formData.phone
       };
 
-      const response = await axios.patch('/api/auth/profile/', dataToSend);
+      await axios.patch('/api/auth/profile/', dataToSend);
       setMessage('Профиль успешно обновлён!');
       setTimeout(() => setMessage(''), 3000);
     } catch (err) {
       console.error('Ошибка:', err.response?.data);
-      setMessage('Ошибка при обновлении: ' + JSON.stringify(err.response?.data));
+      setMessage('Ошибка при обновлении');
     } finally {
       setLoading(false);
     }
@@ -65,7 +64,7 @@ function Profile() {
 
   return (
     <div style={{
-      maxWidth: '600px',
+      maxWidth: '800px',
       margin: '0 auto',
       padding: '20px',
       backgroundColor: 'rgba(0,0,0,0.7)',
@@ -74,6 +73,16 @@ function Profile() {
     }}>
       <h2>👤 Личный кабинет</h2>
       <p><strong>Имя пользователя:</strong> {user.username}</p>
+
+      {/* СНАЧАЛА МОИ КОМАНДЫ */}
+      <div style={{ marginBottom: '30px' }}>
+        <MyTeams />
+      </div>
+
+      <hr style={{ margin: '20px 0', borderColor: 'rgba(255,255,255,0.2)' }} />
+
+      {/* ПОТОМ РЕДАКТИРОВАНИЕ ПРОФИЛЯ */}
+      <h3>✏️ Редактирование профиля</h3>
 
       <form onSubmit={handleSubmit}>
         <div style={{ marginBottom: '15px' }}>
@@ -86,9 +95,6 @@ function Profile() {
             style={{ width: '100%', padding: '8px', borderRadius: '4px', border: 'none' }}
           />
         </div>
-
-<hr style={{ margin: '20px 0', borderColor: 'rgba(255,255,255,0.2)' }} />
-<MyTeams />
 
         <div style={{ marginBottom: '15px' }}>
           <label>Фамилия:</label><br />

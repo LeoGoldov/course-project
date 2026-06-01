@@ -1,6 +1,6 @@
 # teams/serializers.py
 from rest_framework import serializers
-from .models import TechStack, Team
+from .models import TechStack, Team, Comment
 
 
 class TechStackSerializer(serializers.ModelSerializer):
@@ -39,3 +39,13 @@ class TeamCreateUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Team
         fields = ['title', 'description', 'stack', 'logo', 'is_published']
+
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    author_name = serializers.CharField(source='author.username', read_only=True)
+
+    class Meta:
+        model = Comment
+        fields = ['id', 'team', 'text', 'author_name', 'created_at']
+        read_only_fields = ['id', 'author_name', 'created_at']

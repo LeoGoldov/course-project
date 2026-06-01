@@ -14,17 +14,3 @@ class User(AbstractUser):
     def __str__(self):
         return self.username
 
-class Comment(models.Model):
-    team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='comments', verbose_name='Команда')
-    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='comments',
-    verbose_name='Автор')
-    text = models.TextField(verbose_name='Текст комментария')
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')
-
-    class Meta:
-        verbose_name = 'Комментарий'
-        verbose_name_plural = 'Комментарии'
-        ordering = ['created_at']
-
-    def __str__(self):
-        return f'Комментарий от {self.author.username} к {self.team.title}'
