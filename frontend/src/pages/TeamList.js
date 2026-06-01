@@ -1,83 +1,114 @@
-// frontend/src/pages/MyTeams.js
+// frontend/src/pages/TeamList.js
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { useMyTeams, useDeleteTeam } from '../hooks/useTeamsQuery';
 import { useTeams } from '../hooks/useTeamsQuery';
 
-function MyTeams() {
+function TeamList() {
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState('');
   const { user } = useAuth();
-  const { data: teams, isLoading, refetch } = useMyTeams();
-  const deleteTeam = useDeleteTeam();
-  const [deletingId, setDeletingId] = useState(null);
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Удалить команду?')) return;
-    setDeletingId(id);
-    try {
-      await deleteTeam.mutateAsync(id);
-      refetch();
-    } catch (err) {
-      alert('Ошибка при удалении');
-    } finally {
-      setDeletingId(null);
-    }
-  };
+  const { data, isLoading } = useTeams(currentPage, searchTerm);
 
-  if (isLoading) return <div>Загрузка...</div>;
+  const teams = data?.teams || [];
+  const totalPages = data?.totalPages || 1;
+
+  if (isLoading) return <div>Загрузка команд...</div>;
 
   return (
     <div>
-      <h3>📋 Мои команды</h3>
+      <h1>🏆 Банк резюме команд разработчиков</h1>
 
-      {!teams || teams.length === 0 ? (
-        <p>У вас пока нет команд. <Link to="/teams/create" style={{ color: '#ffc107' }}>Создать первую команду</Link></p>
-      ) : (
-        teams.map(team => (
-          <div key={team.id} style={{
-            border: '1px solid rgba(255,255,255,0.2)',
-            borderRadius: '8px',
-            padding: '15px',
-            marginBottom: '15px',
-            backgroundColor: 'rgba(100,100,255,0.3)'
+      {user && (
+        <Link to="/teams/create">
+          <button style={{
+            padding: '10px 20px',
+            backgroundColor: '#28a745',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            marginBottom: '20px'
           }}>
-            <Link to={`/teams/${team.id}`} style={{ textDecoration: 'none', color: '#ffc107' }}>
-              <strong>{team.title}</strong>
-            </Link>
-
-            <div style={{ marginTop: '8px', color: 'white' }}>
-              <div>Статус: {team.is_published ? '✅ Опубликована' : '📥 Снята с публикации'}</div>
-              <div>Стек: <strong>{team.stack_title || 'не указан'}</strong></div>
-              <div>Капитан: <strong>{team.captain_name}</strong></div>
-              <div>👁️ Просмотров: {team.views}</div>
-              <div>📅 Дата: {new Date(team.created_at).toLocaleDateString()}</div>
-            </div>
-
-            <div style={{ marginTop: '10px' }}>
-              <Link to={`/teams/${team.id}/edit`}>
-                <button style={{ marginRight: '10px', padding: '5px 10px', backgroundColor: '#ffc107', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
-                  ✏️ Редактировать
-                </button>
-              </Link>
-              <button
-                onClick={() => handleDelete(team.id)}
-                disabled={deletingId === team.id}
-                style={{ padding: '5px 10px', backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
-              >
-                {deletingId === team.id ? 'Удаление...' : '🗑️ Удалить'}
-              </button>
-            </div>
-          </div>
-        ))
+            ➕ Создать команду
+          </button>
+        </Link>
       )}
 
-      <Link to="/teams/create">
-        <button style={{ marginTop: '15px', padding: '10px 20px', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
-          ➕ Создать новую команду
-        </button>
-      </Link>
+      <div style={{ marginBottom: '20px' }}>
+        <input
+          type="text"
+          placeholder="🔍 Поиск по названию..."
+          value={searchTerm}
+          onChange={(e) => {
+            setSearchTerm(e.target.value);
+            setCurrentPage(1);
+          }}
+          style={{
+            padding: '10px',
+            width: '100%',
+            maxWidth: '400px',
+            border: '1px solid #ddd',
+            borderRadius: '4px'
+          }}
+        />
+      </div>
+
+      <h2>Доступные команды:</h2>
+
+      {teams.length === 0 ? (
+        <p>Нет опубликованных команд. Создайте первую!</p>
+      ) : (
+        <>
+          <ul style={{ listStyle: 'none', padding: 0 }}>
+            {teams.map(team => (
+              <li key={team.id} style={{
+                border: '1px solid rgba(255,255,255,0.2)',
+                borderRadius: '12px',
+                padding: '20px',
+                marginBottom: '15px',
+                backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                color: 'white',
+                backdropFilter: 'blur(8px)'
+              }}>
+                <Link to={`/teams/${team.id}`} style={{ textDecoration: 'none', color: '#ffc107' }}>
+                  <strong style={{ fontSize: '18px' }}>{team.title}</strong>
+                </Link>
+
+                <div style={{ marginTop: '8px', color: '#ddd' }}>
+                  <div>Стек: <span style={{ color: '#ffc107' }}>{team.stack_title || 'не указан'}</span></div>
+                  <div>Капитан: <span style={{ color: '#ffc107' }}>{team.captain_name}</span></div>
+                  <div>👁️ Просмотров: <span style={{ color: '#ffc107' }}>{team.views}</span></div>
+                  <div>📅 Дата: <span style={{ color: '#ffc107' }}>{new Date(team.created_at).toLocaleDateString()}</span></div>
+                </div>
+
+                {user && team.captain_name === user.username && (
+                  <Link to={`/teams/${team.id}/edit`}>
+                    <button style={{ marginTop: '10px', padding: '5px 10px', backgroundColor: '#ffc107', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+                      ✏️ Редактировать
+                    </button>
+                  </Link>
+                )}
+              </li>
+            ))}
+          </ul>
+
+          {totalPages > 1 && (
+            <div style={{ display: 'flex', gap: '15px', justifyContent: 'center', marginTop: '20px' }}>
+              <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>
+                ← Назад
+              </button>
+              <span>{currentPage} / {totalPages}</span>
+              <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>
+                Вперёд →
+              </button>
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }
 
-export default MyTeams;
+export default TeamList;
