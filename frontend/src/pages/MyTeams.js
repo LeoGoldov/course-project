@@ -5,7 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useMyTeams, useDeleteTeam } from '../hooks/useTeamsQuery';
 
 function MyTeams() {
-  const { user } = useAuth();
+
   const { data: teams, isLoading, refetch } = useMyTeams();
   const deleteTeam = useDeleteTeam();
   const [deletingId, setDeletingId] = useState(null);

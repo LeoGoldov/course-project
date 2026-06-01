@@ -37,7 +37,7 @@ function CreateTeam() {
     setError('');
 
     try {
-      const response = await axios.post('/api/teams/', formData);
+      await axios.post('/api/teams/', formData);
       navigate('/');
     } catch (err) {
       setError(err.response?.data?.message || 'Ошибка создания команды');

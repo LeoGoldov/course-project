@@ -132,7 +132,9 @@ function TeamDetail() {
       <h1>{team.title}</h1>
       <p><strong>Стек:</strong> {team.stack_title || 'не указан'}</p>
       <p><strong>Капитан:</strong> {team.captain_name}</p>
-      <p><strong>👁️ Просмотров:</strong> {views}</p>
+      <p><strong>👁️ Просмотров:</strong> {views}
+       {isConnected && <span style={{ color: 'green', marginLeft: '10px' }}>● Live</span>}
+      </p>
       <h3>Описание:</h3>
       <div style={{ background: '#f5f5f5', padding: '15px', borderRadius: '8px' }}>
         {team.description}

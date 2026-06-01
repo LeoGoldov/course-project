@@ -1,5 +1,5 @@
 // frontend/src/contexts/AuthContext.js
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
 import axios from 'axios';
 
 const AuthContext = createContext();
@@ -15,7 +15,7 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     if (accessToken) {
       axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
-      console.log('Token set in axios headers');  // Для отладки
+      console.log('Token set in axios headers');
     } else {
       delete axios.defaults.headers.common['Authorization'];
     }
@@ -36,7 +36,6 @@ export const AuthProvider = ({ children }) => {
         setUser(response.data);
       } catch (error) {
         console.error('Profile load error:', error.response?.status, error.response?.data);
-        // Если 401 — токен невалидный
         if (error.response?.status === 401) {
           localStorage.removeItem('accessToken');
           localStorage.removeItem('refreshToken');
@@ -58,7 +57,6 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('refreshToken', refresh);
       setAccessToken(access);
 
-      // Загружаем профиль после логина
       const profileResponse = await axios.get('/api/auth/profile/');
       setUser(profileResponse.data);
 
@@ -87,7 +85,7 @@ export const AuthProvider = ({ children }) => {
     delete axios.defaults.headers.common['Authorization'];
   };
 
-  const refreshToken = async () => {
+  const refreshToken = useCallback(async () => {
     const refresh = localStorage.getItem('refreshToken');
     if (!refresh) return null;
     try {
@@ -101,7 +99,7 @@ export const AuthProvider = ({ children }) => {
       logout();
       return null;
     }
-  };
+  }, []);
 
   // Перехватчик для обновления токена
   useEffect(() => {
@@ -121,7 +119,7 @@ export const AuthProvider = ({ children }) => {
       }
     );
     return () => axios.interceptors.response.eject(interceptor);
-  }, []);
+  }, [refreshToken]);
 
   return (
     <AuthContext.Provider value={{ user, loading, login, register, logout, isAuthenticated: !!user }}>
