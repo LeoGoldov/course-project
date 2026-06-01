@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useMyTeams, useDeleteTeam } from '../hooks/useTeamsQuery';
+import { useTeams } from '../hooks/useTeamsQuery';
 
 function MyTeams() {
   const { user } = useAuth();
