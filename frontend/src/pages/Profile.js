@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
+import MyTeams from './MyTeams';
 
 function Profile() {
   const { user, logout } = useAuth();
@@ -85,6 +86,9 @@ function Profile() {
             style={{ width: '100%', padding: '8px', borderRadius: '4px', border: 'none' }}
           />
         </div>
+
+<hr style={{ margin: '20px 0', borderColor: 'rgba(255,255,255,0.2)' }} />
+<MyTeams />
 
         <div style={{ marginBottom: '15px' }}>
           <label>Фамилия:</label><br />
