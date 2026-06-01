@@ -7,6 +7,7 @@ import TeamList from './pages/TeamList';
 import CreateTeam from './pages/CreateTeam';
 import EditTeam from './pages/EditTeam';
 import TeamDetail from './pages/TeamDetail';
+import Profile from './pages/Profile';
 
 // frontend/src/App.js (добавить обёртку с классом)
 function Layout({ children }) {
@@ -28,6 +29,7 @@ function Layout({ children }) {
         </Link>
         {isAuthenticated ? (
           <div>
+           <Link to="/profile" style={{ color: 'white', marginRight: '15px' }}>Личный кабинет</Link>
             <span style={{ marginRight: '15px' }}>Привет, {user?.username}!</span>
             <button onClick={logout}>Выйти</button>
           </div>
@@ -79,6 +81,15 @@ function AppRoutes() {
   <Layout>
     <TeamDetail />
   </Layout>
+} />
+<Route path="/profile" element={
+  isAuthenticated ? (
+    <Layout>
+      <Profile />
+    </Layout>
+  ) : (
+    <Navigate to="/login" />
+  )
 } />
     </Routes>
   );
