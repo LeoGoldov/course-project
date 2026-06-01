@@ -1,57 +1,35 @@
 // frontend/src/pages/MyTeams.js
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useMyTeams, useDeleteTeam } from '../hooks/useTeamsQuery';
 
 function MyTeams() {
   const { user } = useAuth();
-  const [teams, setTeams] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [deleting, setDeleting] = useState(null);
-
-  useEffect(() => {
-    if (user) {
-      axios.get('/api/teams/my_teams/')
-        .then(response => {
-          const teamsData = Array.isArray(response.data) ? response.data : (response.data.results || []);
-          setTeams(teamsData);
-          setLoading(false);
-        })
-        .catch(err => {
-          console.error('Ошибка:', err);
-          setLoading(false);
-        });
-    }
-  }, [user]);
+  const { data: teams, isLoading, refetch } = useMyTeams();
+  const deleteTeam = useDeleteTeam();
+  const [deletingId, setDeletingId] = useState(null);
 
   const handleDelete = async (id) => {
     if (!window.confirm('Удалить команду?')) return;
-    setDeleting(id);
+    setDeletingId(id);
     try {
-      await axios.delete(`/api/teams/${id}/`);
-      setTeams(teams.filter(team => team.id !== id));
+      await deleteTeam.mutateAsync(id);
+      refetch();
     } catch (err) {
       alert('Ошибка при удалении');
     } finally {
-      setDeleting(null);
+      setDeletingId(null);
     }
   };
 
-  if (loading) return <div>Загрузка...</div>;
+  if (isLoading) return <div>Загрузка...</div>;
 
   return (
-    <div style={{
-      maxWidth: '800px',
-      margin: '0 auto',
-      padding: '20px',
-      backgroundColor: 'rgba(0,0,0,0.7)',
-      borderRadius: '12px',
-      color: 'white'
-    }}>
-      <h2>📋 Мои команды</h2>
+    <div>
+      <h3>📋 Мои команды</h3>
 
-      {teams.length === 0 ? (
+      {!teams || teams.length === 0 ? (
         <p>У вас пока нет команд. <Link to="/teams/create" style={{ color: '#ffc107' }}>Создать первую команду</Link></p>
       ) : (
         teams.map(team => (
@@ -63,41 +41,26 @@ function MyTeams() {
             backgroundColor: 'rgba(255,255,255,0.1)'
           }}>
             <Link to={`/teams/${team.id}`} style={{ textDecoration: 'none', color: '#ffc107' }}>
-              <strong style={{ fontSize: '18px' }}>{team.title}</strong>
+              <strong>{team.title}</strong>
             </Link>
 
             <div style={{ marginTop: '8px', color: '#ddd' }}>
-              <div>Стек: {team.stack_title || 'не указан'}</div>
+              <div>Статус: {team.is_published ? '✅ Опубликована' : '📥 Снята с публикации'}</div>
               <div>👁️ Просмотров: {team.views}</div>
-              <div>📅 Дата: {new Date(team.created_at).toLocaleDateString()}</div>
             </div>
 
             <div style={{ marginTop: '10px' }}>
               <Link to={`/teams/${team.id}/edit`}>
-                <button style={{
-                  marginRight: '10px',
-                  padding: '5px 10px',
-                  backgroundColor: '#ffc107',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer'
-                }}>
+                <button style={{ marginRight: '10px', padding: '5px 10px', backgroundColor: '#ffc107', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
                   ✏️ Редактировать
                 </button>
               </Link>
               <button
                 onClick={() => handleDelete(team.id)}
-                disabled={deleting === team.id}
-                style={{
-                  padding: '5px 10px',
-                  backgroundColor: '#dc3545',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer'
-                }}
+                disabled={deletingId === team.id}
+                style={{ padding: '5px 10px', backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
               >
-                {deleting === team.id ? 'Удаление...' : '🗑️ Удалить'}
+                {deletingId === team.id ? 'Удаление...' : '🗑️ Удалить'}
               </button>
             </div>
           </div>
@@ -105,15 +68,7 @@ function MyTeams() {
       )}
 
       <Link to="/teams/create">
-        <button style={{
-          marginTop: '15px',
-          padding: '10px 20px',
-          backgroundColor: '#28a745',
-          color: 'white',
-          border: 'none',
-          borderRadius: '4px',
-          cursor: 'pointer'
-        }}>
+        <button style={{ marginTop: '15px', padding: '10px 20px', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
           ➕ Создать новую команду
         </button>
       </Link>
