@@ -40,12 +40,21 @@ function Profile() {
     setMessage('');
 
     try {
-      const response = await axios.put('/api/auth/profile/', formData);
+      // Отправляем только те поля, которые есть в сериализаторе
+      const dataToSend = {
+        first_name: formData.first_name,
+        last_name: formData.last_name,
+        email: formData.email,
+        bio: formData.bio,
+        phone: formData.phone
+      };
+
+      const response = await axios.patch('/api/auth/profile/', dataToSend);
       setMessage('Профиль успешно обновлён!');
-      // обновляем данные пользователя
-      window.location.reload();
+      setTimeout(() => setMessage(''), 3000);
     } catch (err) {
-      setMessage('Ошибка при обновлении');
+      console.error('Ошибка:', err.response?.data);
+      setMessage('Ошибка при обновлении: ' + JSON.stringify(err.response?.data));
     } finally {
       setLoading(false);
     }
@@ -156,11 +165,6 @@ function Profile() {
           Выйти из аккаунта
         </button>
       </form>
-
-      <hr style={{ margin: '20px 0', borderColor: 'rgba(255,255,255,0.2)' }} />
-
-      <h3>📊 Мои команды</h3>
-      <p style={{ color: '#aaa' }}>Здесь будут ваши команды (скоро)</p>
     </div>
   );
 }
