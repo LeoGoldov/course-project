@@ -28,3 +28,16 @@ python manage.py runserver
 cd frontend
 npm install
 npm start
+
+
+
+🔗 API Эндпоинты
+Метод	Эндпоинт	Описание
+POST	/api/auth/register/	Регистрация
+POST	/api/auth/login/	Вход
+GET	/api/teams/	Список команд
+POST	/api/teams/	Создание команды
+GET	/api/teams/{id}/	Детали команды
+PATCH	/api/teams/{id}/	Обновление
+DELETE	/api/teams/{id}/	Удаление
+WS	ws://localhost:8000/ws/teams/{id}/	WebSocket для комментариев
