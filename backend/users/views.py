@@ -1,6 +1,5 @@
 from django.shortcuts import render
-# backend/users/views.py
-from rest_framework import generics, permissions
+from rest_framework import generics, permissions, viewsets
 from .serializers import RegisterSerializer, ProfileUpdateSerializer, UserSerializer
 from django.contrib.auth import get_user_model
 from .models import TechStack, Team, Comment
