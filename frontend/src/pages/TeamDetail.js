@@ -1,4 +1,4 @@
-// frontend/src/pages/TeamDetail.js (упрощённая версия)
+// frontend/src/pages/TeamDetail.js
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -40,7 +40,7 @@ function TeamDetail() {
       .catch(err => console.error('Ошибка загрузки комментариев:', err));
   }, [id]);
 
-  // WebSocket ТОЛЬКО для комментариев
+  // WebSocket для комментариев
   useEffect(() => {
     const ws = new WebSocket(`ws://localhost:8000/ws/teams/${id}/`);
     wsRef.current = ws;
@@ -118,15 +118,29 @@ function TeamDetail() {
     setNewComment('');
   };
 
+  // Функция удаления команды
   const handleDelete = async () => {
-    if (!window.confirm('Удалить команду?')) return;
+    if (!window.confirm('Вы уверены, что хотите удалить эту команду?')) return;
     try {
       await axios.delete(`/api/teams/${id}/`);
       navigate('/');
     } catch (err) {
-      alert('Ошибка удаления');
+      alert('Ошибка при удалении');
     }
   };
+
+// Добавьте функцию togglePublish перед return:
+const togglePublish = async () => {
+  try {
+    const response = await axios.patch(`/api/teams/${id}/`, {
+      is_published: !team.is_published
+    });
+    setTeam({ ...team, is_published: response.data.is_published });
+  } catch (err) {
+    alert('Ошибка при изменении статуса');
+  }
+};
+
 
   if (loading) return <div>Загрузка...</div>;
   if (!team) return <div>Команда не найдена</div>;
