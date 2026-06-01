@@ -109,7 +109,7 @@ function TeamDetail() {
     setNewComment('');
   };
 
-  // ОДНА функция togglePublish
+  // ОДНА функция togglePublish (только здесь!)
   const togglePublish = async () => {
     try {
       const response = await axios.patch(`/api/teams/${id}/`, {
