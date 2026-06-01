@@ -1,7 +1,6 @@
 // frontend/src/pages/MyTeams.js
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
 import { useMyTeams, useDeleteTeam } from '../hooks/useTeamsQuery';
 
 function MyTeams() {
