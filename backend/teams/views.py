@@ -3,12 +3,13 @@ from django.shortcuts import render
 from rest_framework import viewsets, permissions, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from .models import TechStack, Team
+from .models import TechStack, Team, Comment
 from .serializers import (
     TechStackSerializer,
     TeamListSerializer,
     TeamDetailSerializer,
-    TeamCreateUpdateSerializer
+    TeamCreateUpdateSerializer,
+    CommentSerializer
 )
 from .permissions import IsCaptainOrReadOnly
 
@@ -59,3 +60,17 @@ class TeamViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(teams, many=True)
         return Response(serializer.data)
 # Create your views here.
+# backend/teams/views.py (добавить в самом конце)
+
+class CommentViewSet(viewsets.ModelViewSet):
+    serializer_class = CommentSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def get_queryset(self):
+        team_id = self.request.query_params.get('team')
+        if team_id:
+            return Comment.objects.filter(team_id=team_id)
+        return Comment.objects.all()
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
