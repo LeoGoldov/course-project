@@ -1,4 +1,7 @@
 from django.shortcuts import render
+from django.db import models  # если ещё нет
+# или
+from django.db.models import Q
 # teams/views.py
 from rest_framework import viewsets, permissions, filters
 from rest_framework.decorators import action
@@ -23,7 +26,7 @@ class TechStackViewSet(viewsets.ReadOnlyModelViewSet):
 
 class TeamViewSet(viewsets.ModelViewSet):
     """ViewSet для команд"""
-    queryset = Team.objects.filter(is_published=True)
+    queryset = Team.objects.all()
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['title', 'description']
     ordering_fields = ['created_at', 'views']
@@ -67,10 +70,15 @@ class CommentViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
     def get_queryset(self):
-        team_id = self.request.query_params.get('team')
-        if team_id:
-            return Comment.objects.filter(team_id=team_id)
-        return Comment.objects.all()
+        user = self.request.user
+        # Если пользователь авторизован, показываем все его команды + опубликованные чужие
+        if user.is_authenticated:
+            # Свои команды (где капитан) показываем любые, чужие — только опубликованные
+            return Team.objects.filter(
+                models.Q(is_published=True) | models.Q(captain=user)
+            )
+        # Неавторизованным — только опубликованные
+        return Team.objects.filter(is_published=True)
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
