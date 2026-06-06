@@ -8,38 +8,61 @@ import CreateTeam from './pages/CreateTeam';
 import EditTeam from './pages/EditTeam';
 import TeamDetail from './pages/TeamDetail';
 import Profile from './pages/Profile';
+import { NotificationProvider } from './contexts/NotificationContext';
 
-// frontend/src/App.js (добавить обёртку с классом)
 function Layout({ children }) {
   const { user, logout, isAuthenticated } = useAuth();
 
   return (
     <div className="content-wrapper">
+      {/* ВЕРХНЯЯ ПАНЕЛЬ */}
       <div style={{
         display: 'flex',
         justifyContent: 'space-between',
+
         alignItems: 'center',
         marginBottom: '20px',
-        borderBottom: '1px solid #ccc',
+        borderBottom: '1px solid rgba(255,255,255,0.2)',
         paddingBottom: '10px',
-
       }}>
-        <Link to="/" style={{ textDecoration: 'none', fontSize: '24px', color: 'white',  marginLeft: '40%' }}>
+        <Link to="/" style={{ textDecoration: 'none', fontSize: '28px', color: 'white',  paddingLeft: '20px',  fontFamily: "'Old Standard TT', serif"}}>
           Resume-Web
         </Link>
         {isAuthenticated ? (
           <div>
-           <Link to="/profile" style={{ color: 'white', marginRight: '15px' }}>Личный кабинет</Link>
-            <span style={{ marginRight: '15px' }}>Привет, {user?.username}!</span>
-            <button onClick={logout}>Выйти</button>
+            <Link to="/profile" style={{ color: 'white', marginRight: '15px' }}>Личный кабинет</Link>
+            <span style={{ color: 'white', marginRight: '15px' }}>Привет, {user?.username}!</span>
+            <button onClick={logout} style={{
+              backgroundColor: '#dc3545',
+              color: 'white',
+              border: 'none',
+              padding: '8px 16px',
+              borderRadius: '4px',
+              cursor: 'pointer'
+            }}>Выйти</button>
           </div>
         ) : (
           <Link to="/login">
-            <button>Войти</button>
+            <button style={{
+              backgroundColor: '#007bff',
+              color: 'white',
+              border: 'none',
+              padding: '8px 16px',
+              borderRadius: '4px',
+              cursor: 'pointer'
+            }}>Войти</button>
           </Link>
         )}
       </div>
-      {children}
+
+      {/* КОНТЕНТ С ОТСТУПАМИ */}
+      <div style={{
+        maxWidth: '1200px',
+        margin: '0 auto',
+        padding: '0 20px'
+      }}>
+        {children}
+      </div>
     </div>
   );
 }
@@ -78,19 +101,19 @@ function AppRoutes() {
         )
       } />
       <Route path="/teams/:id" element={
-  <Layout>
-    <TeamDetail />
-  </Layout>
-} />
-<Route path="/profile" element={
-  isAuthenticated ? (
-    <Layout>
-      <Profile />
-    </Layout>
-  ) : (
-    <Navigate to="/login" />
-  )
-} />
+        <Layout>
+          <TeamDetail />
+        </Layout>
+      } />
+      <Route path="/profile" element={
+        isAuthenticated ? (
+          <Layout>
+            <Profile />
+          </Layout>
+        ) : (
+          <Navigate to="/login" />
+        )
+      } />
     </Routes>
   );
 }
@@ -99,7 +122,9 @@ function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <AppRoutes />
+        <NotificationProvider>
+          <AppRoutes />
+        </NotificationProvider>
       </AuthProvider>
     </BrowserRouter>
   );

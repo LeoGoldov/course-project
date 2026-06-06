@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { useCreateTeam } from '../hooks/useTeamsQuery';
+import { useNotification } from '../contexts/NotificationContext';
 
 function CreateTeam() {
   const navigate = useNavigate();
   const [techStacks, setTechStacks] = useState([]);
+  const { addNotification } = useNotification();
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -13,6 +16,7 @@ function CreateTeam() {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+const createTeam = useCreateTeam();
 
   useEffect(() => {
     // Загружаем список технологий для выбора
@@ -31,15 +35,17 @@ function CreateTeam() {
     });
   };
 
-  const handleSubmit = async (e) => {
+ const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setError('');
+    setLoading(true);
 
     try {
-      await axios.post('/api/teams/', formData);
+      await createTeam.mutateAsync(formData);
+       addNotification('Успех! Команда успешно создана!', 'success');
       navigate('/');
     } catch (err) {
+     addNotification('❌ Ошибка при создании команды', 'error');
       setError(err.response?.data?.message || 'Ошибка создания команды');
       setLoading(false);
     }

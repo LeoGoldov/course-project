@@ -2,21 +2,23 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useMyTeams, useDeleteTeam } from '../hooks/useTeamsQuery';
+import { useNotification } from '../contexts/NotificationContext';
 
 function MyTeams() {
 
   const { data: teams, isLoading, refetch } = useMyTeams();
   const deleteTeam = useDeleteTeam();
   const [deletingId, setDeletingId] = useState(null);
-
+  const { addNotification } = useNotification();
   const handleDelete = async (id) => {
     if (!window.confirm('Удалить команду?')) return;
     setDeletingId(id);
     try {
       await deleteTeam.mutateAsync(id);
+      addNotification(' Команда удалена', 'info');
       refetch();
     } catch (err) {
-      alert('Ошибка при удалении');
+      addNotification(' Ошибка при удалении', 'error');
     } finally {
       setDeletingId(null);
     }
@@ -25,7 +27,7 @@ function MyTeams() {
   if (isLoading) return <div>Загрузка...</div>;
 
   return (
-    <div>
+    <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
       <h3>📋 Мои команды</h3>
 
       {!teams || teams.length === 0 ? (

@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useNotification } from '../contexts/NotificationContext';
 
 function EditTeam() {
   const { id } = useParams();
@@ -16,6 +17,7 @@ function EditTeam() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const { addNotification } = useNotification();
 
   useEffect(() => {
     // Загружаем список технологий
@@ -56,9 +58,11 @@ function EditTeam() {
     setError('');
 
     try {
-      await axios.put(`/api/teams/${id}/`, formData);
+      await updateTeam.mutateAsync({ id, data: formData });
+      addNotification('Успех! Команда успешно обновлена!', 'success');
       navigate(`/`);
     } catch (err) {
+      addNotification('Ошибка при обновлении команды!', 'error');
       setError(err.response?.data?.message || 'Ошибка сохранения');
       setSaving(false);
     }

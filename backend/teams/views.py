@@ -15,7 +15,8 @@ from .serializers import (
     CommentSerializer
 )
 from .permissions import IsCaptainOrReadOnly
-
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 
 class TechStackViewSet(viewsets.ReadOnlyModelViewSet):
     """ViewSet для стека технологий (только чтение)"""
@@ -46,7 +47,17 @@ class TeamViewSet(viewsets.ModelViewSet):
         return [permissions.AllowAny()]
 
     def perform_create(self, serializer):
-        serializer.save(captain=self.request.user)
+        team = serializer.save(captain=self.request.user)
+
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            'notifications',
+            {
+                'type': 'send_notification',
+                'type_msg': 'new_team',
+                'team_title': team.title
+            }
+        )
 
     @action(detail=True, methods=['post'])
     def increment_views(self, request, pk=None):

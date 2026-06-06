@@ -97,3 +97,17 @@ class TeamConsumer(AsyncWebsocketConsumer):
             'author_name': user.username,
             'created_at': comment.created_at.strftime('%d.%m.%Y %H:%M')
         }
+class NotificationConsumer(AsyncWebsocketConsumer):
+    async def connect(self):
+        self.room_group_name = 'notifications'
+        await self.channel_layer.group_add(self.room_group_name, self.channel_name)
+        await self.accept()
+
+    async def disconnect(self, close_code):
+        await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
+
+    async def send_notification(self, event):
+        await self.send(text_data=json.dumps({
+            'type': event['type'],
+            'team_title': event.get('team_title')
+        }))

@@ -1,23 +1,60 @@
 // frontend/src/pages/TeamList.js
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useTeams } from '../hooks/useTeamsQuery';
+import { useNotification } from '../contexts/NotificationContext';
 
 function TeamList() {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
   const { user } = useAuth();
 
-  const { data, isLoading } = useTeams(currentPage, searchTerm);
+  const { data, isLoading, refetch } = useTeams(currentPage, searchTerm);
+  const { addNotification } = useNotification();
+  const wsRef = useRef(null);
 
   const teams = data?.teams || [];
   const totalPages = data?.totalPages || 1;
 
+  // WebSocket для уведомлений о новых командах
+  useEffect(() => {
+    const ws = new WebSocket('ws://localhost:8000/ws/notifications/');
+    wsRef.current = ws;
+
+    ws.onopen = () => {
+      console.log('✅ WebSocket notifications connected');
+    };
+
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      console.log('📨 Notification:', data);
+      if (data.type === 'new_team') {
+        addNotification(`🆕 Новая команда: ${data.team_title}`, 'info');
+        // Обновляем список команд
+        refetch();
+      }
+    };
+
+    ws.onerror = (error) => {
+      console.error('❌ WebSocket error:', error);
+    };
+
+    ws.onclose = () => {
+      console.log('🔌 WebSocket disconnected');
+    };
+
+    return () => {
+      if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+        wsRef.current.close();
+      }
+    };
+  }, [addNotification, refetch]);
+
   if (isLoading) return <div>Загрузка команд...</div>;
 
   return (
-    <div>
+    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 20px' }}>
       <h1>🏆 Банк резюме команд разработчиков</h1>
 
       {user && (
