@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useNotification } from '../contexts/NotificationContext';
+import { useUpdateTeam } from '../hooks/useTeamsQuery';
 
 function EditTeam() {
   const { id } = useParams();
@@ -18,6 +19,7 @@ function EditTeam() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const { addNotification } = useNotification();
+  const updateTeam = useUpdateTeam();
 
   useEffect(() => {
     // Загружаем список технологий
@@ -59,10 +61,10 @@ function EditTeam() {
 
     try {
       await updateTeam.mutateAsync({ id, data: formData });
-      addNotification('Успех! Команда успешно обновлена!', 'success');
-      navigate(`/`);
+      addNotification('✅ Команда успешно обновлена!', 'success');
+      navigate('/teams');
     } catch (err) {
-      addNotification('Ошибка при обновлении команды!', 'error');
+      addNotification('❌ Ошибка при обновлении команды', 'error');
       setError(err.response?.data?.message || 'Ошибка сохранения');
       setSaving(false);
     }
@@ -72,7 +74,7 @@ function EditTeam() {
   if (error) return <div style={{ color: 'red' }}>{error}</div>;
 
   return (
-    <div>
+    <div style={{ maxWidth: '800px', margin: '0 auto', padding: '0 20px' }}>
       <h1>Редактирование команды</h1>
 
       <form onSubmit={handleSubmit}>
@@ -84,7 +86,7 @@ function EditTeam() {
             value={formData.title}
             onChange={handleChange}
             required
-            style={{ width: '100%', padding: '8px' }}
+            style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}
           />
         </div>
 
@@ -96,7 +98,7 @@ function EditTeam() {
             onChange={handleChange}
             required
             rows="5"
-            style={{ width: '100%', padding: '8px' }}
+            style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}
           />
         </div>
 
@@ -107,7 +109,7 @@ function EditTeam() {
             value={formData.stack}
             onChange={handleChange}
             required
-            style={{ width: '100%', padding: '8px' }}
+            style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}
           >
             <option value="">Выберите стек</option>
             {techStacks.map(stack => (
@@ -132,10 +134,10 @@ function EditTeam() {
 
         {error && <p style={{ color: 'red' }}>{error}</p>}
 
-        <button type="submit" disabled={saving} style={{ marginTop: '20px' }}>
+        <button type="submit" disabled={saving} style={{ marginTop: '20px', padding: '10px 20px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
           {saving ? 'Сохранение...' : 'Сохранить изменения'}
         </button>
-        <button type="button" onClick={() => navigate('/')} style={{ marginTop: '20px', marginLeft: '10px' }}>
+        <button type="button" onClick={() => navigate('/')} style={{ marginTop: '20px', marginLeft: '10px', padding: '10px 20px', backgroundColor: '#6c757d', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
           Отмена
         </button>
       </form>

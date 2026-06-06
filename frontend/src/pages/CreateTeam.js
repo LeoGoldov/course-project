@@ -43,7 +43,7 @@ const createTeam = useCreateTeam();
     try {
       await createTeam.mutateAsync(formData);
        addNotification('Успех! Команда успешно создана!', 'success');
-      navigate('/');
+      navigate('/teams');
     } catch (err) {
      addNotification('❌ Ошибка при создании команды', 'error');
       setError(err.response?.data?.message || 'Ошибка создания команды');

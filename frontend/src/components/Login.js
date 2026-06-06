@@ -11,14 +11,14 @@ function Login({ onSuccess }) {
   const { login, register } = useAuth();
 
   const handleLogin = async (e) => {
-    e.preventDefault();
-    const result = await login(username, password);
-    if (result.success) {
-      if (onSuccess) onSuccess();
-    } else {
-      setError(result.error);
-    }
-  };
+  e.preventDefault();
+  const result = await login(username, password);
+  if (result.success) {
+    window.location.href = '/teams';  // ← измени на /teams
+  } else {
+    setError(result.error);
+  }
+};
 
   const handleRegister = async (e) => {
     e.preventDefault();

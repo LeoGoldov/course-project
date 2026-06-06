@@ -76,8 +76,8 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/login" element={
-        isAuthenticated ? <Navigate to="/" /> : <Login onSuccess={() => window.location.href = '/'} />
-      } />
+  isAuthenticated ? <Navigate to="/teams" /> : <Login onSuccess={() => window.location.href = '/teams'} />
+} />
       <Route path="/" element={<LandingPage />} />
 
       <Route path="/teams" element={

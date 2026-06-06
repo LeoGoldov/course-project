@@ -20,6 +20,8 @@ function TeamDetail() {
   useEffect(() => {
     axios.get(`/api/teams/${id}/`)
       .then(response => {
+        console.log('Team data:', response.data); // Для отладки
+         console.log('Team description:', response.data.description);
         setTeam(response.data);
         setViews(response.data.views);
         setLoading(false);
@@ -51,11 +53,21 @@ function TeamDetail() {
     };
 
     ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      if (data.type === 'new_comment') {
-        setComments(prev => [...prev, data.comment]);
-      }
-    };
+  const data = JSON.parse(event.data);
+  if (data.type === 'new_comment') {
+    setComments(prev => {
+      // Проверяем, нет ли уже такого комментария (по id или тексту + автору)
+      const exists = prev.some(c =>
+        c.id === data.comment.id ||
+        (c.text === data.comment.text &&
+         c.author_name === data.comment.author_name &&
+         c.created_at !== 'Отправка...')
+      );
+      if (exists) return prev;
+      return [...prev, data.comment];
+    });
+  }
+};
 
     ws.onerror = (error) => {
       console.error('❌ WebSocket error:', error);
@@ -82,34 +94,42 @@ function TeamDetail() {
   }, [id]);
 
   const handleSendComment = (e) => {
-    e.preventDefault();
-    if (!newComment.trim() || !user) return;
+  e.preventDefault();
+  if (!newComment.trim() || !user) return;
 
-    const tempComment = {
-      id: Date.now(),
-      text: newComment,
+  const commentText = newComment;
+  setNewComment('');
+
+  // Отправляем через WebSocket (без добавления временного комментария)
+  if (wsRef.current?.readyState === WebSocket.OPEN) {
+    wsRef.current.send(JSON.stringify({
+      type: 'new_comment',
+      text: commentText,
+      user_id: user.id
+    }));
+  } else {
+    // Fallback через REST
+    const tempId = Date.now();
+    setComments(prev => [...prev, {
+      id: tempId,
+      text: commentText,
       author_name: user.username,
       created_at: 'Отправка...'
-    };
-    setComments(prev => [...prev, tempComment]);
+    }]);
 
-    if (wsRef.current?.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify({
-        type: 'new_comment',
-        text: newComment,
-        user_id: user.id
-      }));
-    } else {
-      axios.post('/api/comments/', { team: parseInt(id), text: newComment })
-        .then(response => {
-          setComments(prev => prev.map(c => c.id === tempComment.id ? response.data : c));
-        })
-        .catch(() => setComments(prev => prev.filter(c => c.id !== tempComment.id)));
-    }
-    setNewComment('');
-  };
+    axios.post('/api/comments/', { team: parseInt(id), text: commentText })
+      .then(response => {
+        setComments(prev => prev.map(c =>
+          c.id === tempId ? response.data : c
+        ));
+      })
+      .catch(() => {
+        setComments(prev => prev.filter(c => c.id !== tempId));
+      });
+  }
+  setNewComment('');
+};
 
-  // ОДНА функция togglePublish (только здесь!)
   const togglePublish = async () => {
     try {
       const response = await axios.patch(`/api/teams/${id}/`, {
@@ -124,21 +144,33 @@ function TeamDetail() {
   if (loading) return <div>Загрузка...</div>;
   if (!team) return <div>Команда не найдена</div>;
 
-  const isCaptain = user && team.captain_name === user.username;
+  const isCaptain = user && (
+    team.captain_name === user.username ||
+    team.captain?.username === user.username ||
+    team.captain === user.username
+  );
+
+  // Получаем название стека из разных возможных полей
+  const stackTitle = team.stack_title || team.stack?.title || team.tech_stack || 'не указан';
+  const captainName = team.captain_name || team.captain?.username || team.captain || 'не указан';
 
   return (
     <div style={{ padding: '20px', maxWidth: '800px', margin: '0 auto' }}>
       <button onClick={() => navigate('/')}>← Назад</button>
       <h1>{team.title}</h1>
-      <p><strong>Стек:</strong> {team.stack_title || 'не указан'}</p>
-      <p><strong>Капитан:</strong> {team.captain_name}</p>
-      <p><strong>👁️ Просмотров:</strong> {views}
-       {isConnected && <span style={{ color: 'green', marginLeft: '10px' }}>● Live</span>}
+      <p><strong>Стек:</strong> {stackTitle}</p>
+      <p><strong>Капитан:</strong> {captainName}</p>
+      <p>
+        <strong>👁️ Просмотров:</strong> {views}
+        {isConnected && <span style={{ color: 'green', marginLeft: '10px' }}>● Live</span>}
       </p>
+      <p><strong>Статус:</strong> {team.is_published ? '✅ Опубликована' : '📥 Снята с публикации'}</p>
       <h3>Описание:</h3>
-      <div style={{ background: '#f5f5f5', padding: '15px', borderRadius: '8px' }}>
-        {team.description}
-      </div>
+<div style={{  background: 'rgba(75, 0, 130, 0.8)',  padding: '15px', borderRadius: '8px' }}>
+  {team?.description || 'Нет описания'}
+</div>
+
+
       {isCaptain && (
         <div style={{ marginTop: '20px' }}>
           <button onClick={() => navigate(`/teams/${id}/edit`)} style={{ marginRight: '10px' }}>
@@ -169,7 +201,7 @@ function TeamDetail() {
         {user ? (
           <form onSubmit={handleSendComment} style={{ display: 'flex', gap: '10px' }}>
             <input type="text" value={newComment} onChange={e => setNewComment(e.target.value)}
-              placeholder="Напишите комментарий..." style={{ flex: 1, padding: '10px' }} />
+              placeholder="Напишите комментарий..." style={{ flex: 1, padding: '10px', borderRadius: '4px', border: '1px solid #ddd' }} />
             <button type="submit" disabled={!newComment.trim()}>Отправить</button>
           </form>
         ) : <p>Войдите, чтобы оставить комментарий</p>}
