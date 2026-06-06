@@ -9,6 +9,7 @@ import EditTeam from './pages/EditTeam';
 import TeamDetail from './pages/TeamDetail';
 import Profile from './pages/Profile';
 import { NotificationProvider } from './contexts/NotificationContext';
+import LandingPage from './pages/LandingPage';
 
 function Layout({ children }) {
   const { user, logout, isAuthenticated } = useAuth();
@@ -77,11 +78,13 @@ function AppRoutes() {
       <Route path="/login" element={
         isAuthenticated ? <Navigate to="/" /> : <Login onSuccess={() => window.location.href = '/'} />
       } />
-      <Route path="/" element={
-        <Layout>
-          <TeamList />
-        </Layout>
-      } />
+      <Route path="/" element={<LandingPage />} />
+
+      <Route path="/teams" element={
+  <Layout>
+    <TeamList />
+  </Layout>
+} />
       <Route path="/teams/create" element={
         isAuthenticated ? (
           <Layout>
