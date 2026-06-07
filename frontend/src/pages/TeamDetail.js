@@ -15,7 +15,7 @@ function TeamDetail() {
   const [newComment, setNewComment] = useState('');
   const [isConnected, setIsConnected] = useState(false);
   const wsRef = useRef(null);
-
+  const viewIncremented = useRef(false);
   // Загрузка данных команды
   useEffect(() => {
     axios.get(`/api/teams/${id}/`)
@@ -88,10 +88,15 @@ function TeamDetail() {
 
   // Увеличение просмотров
   useEffect(() => {
+  if (!viewIncremented.current) {
+    viewIncremented.current = true;
     axios.post(`/api/teams/${id}/increment_views/`)
-      .then(response => setViews(response.data.views))
+      .then(response => {
+        setViews(response.data.views);
+      })
       .catch(err => console.error('Ошибка увеличения просмотров:', err));
-  }, [id]);
+  }
+}, [id]);
 
   const handleSendComment = (e) => {
   e.preventDefault();
@@ -153,13 +158,14 @@ function TeamDetail() {
   // Получаем название стека из разных возможных полей
   const stackTitle = team.stack_title || team.stack?.title || team.tech_stack || 'не указан';
   const captainName = team.captain_name || team.captain?.username || team.captain || 'не указан';
-
+// В компоненте TeamDetail, после загрузки данных добавь:
+console.log('team data:', team);
   return (
     <div style={{ padding: '20px', maxWidth: '800px', margin: '0 auto' }}>
-      <button onClick={() => navigate('/')}>← Назад</button>
+      <button onClick={() => navigate('/teams')}>← Назад</button>
       <h1>{team.title}</h1>
-      <p><strong>Стек:</strong> {stackTitle}</p>
-      <p><strong>Капитан:</strong> {captainName}</p>
+      <p><strong>Стек:</strong> {team.stack?.title || team.stack_title || 'не указан'}</p>
+      <p><strong>Капитан:</strong> {team.captain?.username || team.captain_name || team.captain || 'не указан'}</p>
       <p>
         <strong>👁️ Просмотров:</strong> {views}
         {isConnected && <span style={{ color: 'green', marginLeft: '10px' }}>● Live</span>}
