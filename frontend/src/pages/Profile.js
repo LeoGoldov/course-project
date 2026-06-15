@@ -1,6 +1,7 @@
 // frontend/src/pages/Profile.js
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import MyTeams from './MyTeams';
 
@@ -15,6 +16,8 @@ function Profile() {
   });
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState('teams');
+  const [favorites, setFavorites] = useState([]);
 
   useEffect(() => {
     if (user) {
@@ -25,6 +28,18 @@ function Profile() {
         bio: user.bio || '',
         phone: user.phone || ''
       });
+    }
+  }, [user]);
+
+  // Загрузка избранного
+  useEffect(() => {
+    if (user) {
+      axios.get('/api/favorites/')
+        .then(response => {
+          const favs = Array.isArray(response.data) ? response.data : (response.data.results || []);
+          setFavorites(favs);
+        })
+        .catch(err => console.error('Ошибка загрузки избранного:', err));
     }
   }, [user]);
 
@@ -74,14 +89,75 @@ function Profile() {
       <h2>👤 Личный кабинет</h2>
       <p><strong>Имя пользователя:</strong> {user.username}</p>
 
-      {/* СНАЧАЛА МОИ КОМАНДЫ */}
-      <div style={{ marginBottom: '30px' }}>
-        <MyTeams />
+      {/* Кнопки переключения вкладок */}
+      <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', borderBottom: '1px solid rgba(255,255,255,0.2)', paddingBottom: '10px' }}>
+        <button
+          onClick={() => setActiveTab('teams')}
+          style={{
+            padding: '8px 16px',
+            backgroundColor: activeTab === 'teams' ? '#007bff' : 'rgba(255,255,255,0.2)',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer'
+          }}
+        >
+          📋 Мои команды
+        </button>
+        <button
+          onClick={() => setActiveTab('favorites')}
+          style={{
+            padding: '8px 16px',
+            backgroundColor: activeTab === 'favorites' ? '#007bff' : 'rgba(255,255,255,0.2)',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer'
+          }}
+        >
+          ❤️ Избранное ({favorites.length})
+        </button>
       </div>
+
+      {/* Вкладка "Мои команды" */}
+      {activeTab === 'teams' && (
+        <div style={{ marginBottom: '30px' }}>
+          <MyTeams />
+        </div>
+      )}
+
+      {/* Вкладка "Избранное" */}
+      {activeTab === 'favorites' && (
+        <div style={{ marginBottom: '30px' }}>
+          <h3>❤️ Избранные команды</h3>
+          {favorites.length === 0 ? (
+            <p>У вас пока нет избранных команд. Добавьте их на главной странице.</p>
+          ) : (
+            favorites.map(fav => (
+              <div key={fav.id} style={{
+                border: '1px solid rgba(255,255,255,0.2)',
+                borderRadius: '8px',
+                padding: '15px',
+                marginBottom: '15px',
+                backgroundColor: 'rgba(255,255,255,0.1)'
+              }}>
+                <Link to={`/teams/${fav.team}`} style={{ color: '#ffc107', textDecoration: 'none' }}>
+                  <strong>{fav.team_title}</strong>
+                </Link>
+                <div style={{ marginTop: '8px', color: '#ddd' }}>
+                  <div>Стек: {fav.team_stack || 'не указан'}</div>
+                  <div>Капитан: {fav.team_captain}</div>
+                  <div>👁️ Просмотров: {fav.team_views}</div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      )}
 
       <hr style={{ margin: '20px 0', borderColor: 'rgba(255,255,255,0.2)' }} />
 
-      {/* ПОТОМ РЕДАКТИРОВАНИЕ ПРОФИЛЯ */}
+      {/* Редактирование профиля */}
       <h3>✏️ Редактирование профиля</h3>
 
       <form onSubmit={handleSubmit}>
