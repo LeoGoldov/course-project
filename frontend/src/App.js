@@ -12,7 +12,7 @@ import { NotificationProvider } from './contexts/NotificationContext';
 import LandingPage from './pages/LandingPage';
 
 function Layout({ children }) {
-  const { user, logout, isAuthenticated } = useAuth();
+  const { logout, isAuthenticated } = useAuth();
 
   return (
     <div className="content-wrapper">
