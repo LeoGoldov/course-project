@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useTeams } from '../hooks/useTeamsQuery';
 import { useNotification } from '../contexts/NotificationContext';
+import axios from 'axios';
 
 function TeamList() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -17,38 +18,43 @@ function TeamList() {
   const teams = data?.teams || [];
   const totalPages = data?.totalPages || 1;
 
-  // WebSocket для уведомлений о новых командах
+  const [favorites, setFavorites] = useState([]);
+
+  // Загрузка избранного
   useEffect(() => {
-    const ws = new WebSocket('ws://localhost:8000/ws/notifications/');
-    wsRef.current = ws;
+    if (user) {
+      axios.get('/api/favorites/')
+        .then(response => {
+          const favs = Array.isArray(response.data) ? response.data : (response.data.results || []);
+          setFavorites(favs);
+        })
+        .catch(err => console.error('Ошибка загрузки избранного:', err));
+    }
+  }, [user]);
 
-    ws.onopen = () => {
-      console.log('✅ WebSocket notifications connected');
-    };
+  // Проверка, в избранном ли команда
+  const isFavorite = (teamId) => favorites.some(fav => fav.team === teamId);
 
-    ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      console.log('📨 Notification:', data);
-      if (data.type === 'new_team') {
-        addNotification(`🆕 Новая команда: ${data.team_title}`, 'info');
-        // Обновляем список команд
-        refetch();
-      }
-    };
+  // Добавление/удаление из избранного
+  const toggleFavorite = async (teamId) => {
+    if (!user) return;
 
-    ws.onerror = (error) => {
-      console.error('❌ WebSocket error:', error);
-    };
+    const fav = favorites.find(f => f.team === teamId);
+    if (fav) {
+      await axios.delete(`/api/favorites/${fav.id}/`);
+      setFavorites(favorites.filter(f => f.team !== teamId));
+    } else {
+      const response = await axios.post('/api/favorites/', { team: teamId });
+      setFavorites([...favorites, response.data]);
+    }
+  };
 
-    ws.onclose = () => {
-      console.log('🔌 WebSocket disconnected');
-    };
-
-    return () => {
-      if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-        wsRef.current.close();
-      }
-    };
+  // WebSocket для уведомлений о новых командах (отключён, чтобы не было ошибок)
+  useEffect(() => {
+    return; // Отключено, чтобы не спамило ошибками при runserver
+    // const ws = new WebSocket('ws://localhost:8000/ws/notifications/');
+    // wsRef.current = ws;
+    // ... остальной код
   }, [addNotification, refetch]);
 
   if (isLoading) return <div>Загрузка команд...</div>;
@@ -109,9 +115,46 @@ function TeamList() {
                 color: 'white',
                 backdropFilter: 'blur(8px)'
               }}>
-                <Link to={`/teams/${team.id}`} style={{ textDecoration: 'none', color: '#ffc107' }}>
-                  <strong style={{ fontSize: '18px' }}>{team.title}</strong>
-                </Link>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}>
+                  <Link to={`/teams/${team.id}`} style={{ textDecoration: 'none', color: '#ffc107' }}>
+                    <strong style={{ fontSize: '18px' }}>{team.title}</strong>
+                  </Link>
+
+                  <div>
+                    {/* Кнопка избранного */}
+                    {user && (
+                      <button
+                        onClick={() => toggleFavorite(team.id)}
+                        style={{
+                          padding: '5px 12px',
+                          marginRight: '10px',
+                          backgroundColor: isFavorite(team.id) ? '#dc3545' : '#28a745',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '4px',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        {isFavorite(team.id) ? '❤️ В избранном' : '🤍 В избранное'}
+                      </button>
+                    )}
+
+                    {/* Кнопка редактирования (только для капитана) */}
+                    {user && team.captain_name === user.username && (
+                      <Link to={`/teams/${team.id}/edit`}>
+                        <button style={{
+                          padding: '5px 12px',
+                          backgroundColor: '#ffc107',
+                          border: 'none',
+                          borderRadius: '4px',
+                          cursor: 'pointer'
+                        }}>
+                          ✏️ Редактировать
+                        </button>
+                      </Link>
+                    )}
+                  </div>
+                </div>
 
                 <div style={{ marginTop: '8px', color: '#ddd' }}>
                   <div>Стек: <span style={{ color: '#ffc107' }}>{team.stack_title || 'не указан'}</span></div>
@@ -119,14 +162,6 @@ function TeamList() {
                   <div>👁️ Просмотров: <span style={{ color: '#ffc107' }}>{team.views}</span></div>
                   <div>📅 Дата: <span style={{ color: '#ffc107' }}>{new Date(team.created_at).toLocaleDateString()}</span></div>
                 </div>
-
-                {user && team.captain_name === user.username && (
-                  <Link to={`/teams/${team.id}/edit`}>
-                    <button style={{ marginTop: '10px', padding: '5px 10px', backgroundColor: '#ffc107', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
-                      ✏️ Редактировать
-                    </button>
-                  </Link>
-                )}
               </li>
             ))}
           </ul>
