@@ -135,7 +135,7 @@ function TeamList() {
                           cursor: 'pointer'
                         }}
                       >
-                        {isFavorite(team.id) ? '❤️ В избранном' : '🤍 В избранное'}
+                        {isFavorite(team.id) ? ' В избранном' : ' В избранное'}
                       </button>
                     )}
 

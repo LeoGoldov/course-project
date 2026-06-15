@@ -102,7 +102,7 @@ function Profile() {
             cursor: 'pointer'
           }}
         >
-          📋 Мои команды
+           Мои команды
         </button>
         <button
           onClick={() => setActiveTab('favorites')}
@@ -115,7 +115,7 @@ function Profile() {
             cursor: 'pointer'
           }}
         >
-          ❤️ Избранное ({favorites.length})
+           Избранное ({favorites.length})
         </button>
       </div>
 
@@ -129,7 +129,7 @@ function Profile() {
       {/* Вкладка "Избранное" */}
       {activeTab === 'favorites' && (
         <div style={{ marginBottom: '30px' }}>
-          <h3>❤️ Избранные команды</h3>
+          <h3> Избранные команды</h3>
           {favorites.length === 0 ? (
             <p>У вас пока нет избранных команд. Добавьте их на главной странице.</p>
           ) : (
@@ -147,7 +147,7 @@ function Profile() {
                 <div style={{ marginTop: '8px', color: '#ddd' }}>
                   <div>Стек: {fav.team_stack || 'не указан'}</div>
                   <div>Капитан: {fav.team_captain}</div>
-                  <div>👁️ Просмотров: {fav.team_views}</div>
+                  <div> Просмотров: {fav.team_views}</div>
                 </div>
               </div>
             ))
@@ -158,7 +158,7 @@ function Profile() {
       <hr style={{ margin: '20px 0', borderColor: 'rgba(255,255,255,0.2)' }} />
 
       {/* Редактирование профиля */}
-      <h3>✏️ Редактирование профиля</h3>
+      <h3> Редактирование профиля</h3>
 
       <form onSubmit={handleSubmit}>
         <div style={{ marginBottom: '15px' }}>

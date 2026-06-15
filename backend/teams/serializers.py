@@ -1,6 +1,7 @@
 # teams/serializers.py
 from rest_framework import serializers
-from .models import TechStack, Team, Comment
+from .models import TechStack, Team, Comment, Favorite
+
 
 
 class TechStackSerializer(serializers.ModelSerializer):

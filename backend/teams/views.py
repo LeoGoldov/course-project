@@ -78,23 +78,26 @@ class TeamViewSet(viewsets.ModelViewSet):
 # Create your views here.
 # backend/teams/views.py (добавить в самом конце)
 
+# backend/teams/views.py
+
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
     def get_queryset(self):
-        user = self.request.user
-        # Если пользователь авторизован, показываем все его команды + опубликованные чужие
-        if user.is_authenticated:
-            # Свои команды (где капитан) показываем любые, чужие — только опубликованные
-            return Team.objects.filter(
-                models.Q(is_published=True) | models.Q(captain=user)
-            )
-        # Неавторизованным — только опубликованные
-        return Team.objects.filter(is_published=True)
+        queryset = Comment.objects.all()
+        team_id = self.request.query_params.get('team')
+        if team_id:
+            queryset = queryset.filter(team_id=team_id)
+        return queryset
 
     def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
+        # Получаем team_id из данных запроса
+        team_id = self.request.data.get('team')
+        if team_id:
+            serializer.save(author=self.request.user, team_id=team_id)
+        else:
+            serializer.save(author=self.request.user)
 
 class FavoriteViewSet(viewsets.ModelViewSet):
     serializer_class = FavoriteSerializer

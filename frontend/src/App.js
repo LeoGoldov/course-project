@@ -17,44 +17,83 @@ function Layout({ children }) {
   return (
     <div className="content-wrapper">
       {/* ВЕРХНЯЯ ПАНЕЛЬ */}
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
+<div style={{
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  marginBottom: '30px',
+  padding: '15px 30px',
+  background: 'linear-gradient(135deg, rgba(25, 25, 35, 0.95) 0%, rgba(45, 45, 65, 0.95) 100%)',
+  backdropFilter: 'blur(10px)',
+  borderRadius: '16px',
+  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
+  borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
+}}>
+  <Link to="/teams" style={{
+    textDecoration: 'none',
+    fontSize: '26px',
+    fontWeight: 'bold',
+    background: 'linear-gradient(135deg, #FFD700, #FFA500)',
+    WebkitBackgroundClip: 'text',
+    WebkitTextFillColor: 'transparent',
+    backgroundClip: 'text',
+    letterSpacing: '1px'
+  }}>
+     Resume-Web
+  </Link>
 
-        alignItems: 'center',
-        marginBottom: '20px',
-        borderBottom: '1px solid rgba(255,255,255,0.2)',
-        paddingBottom: '10px',
-      }}>
-        <Link to="/" style={{ textDecoration: 'none', fontSize: '28px', color: 'white',  paddingLeft: '20px',  fontFamily: "'Old Standard TT', serif"}}>
-          Resume-Web
-        </Link>
-        {isAuthenticated ? (
-          <div>
-            <Link to="/profile" style={{ color: 'white', marginRight: '15px' }}>Личный кабинет</Link>
-            <span style={{ color: 'white', marginRight: '15px' }}>Привет, {user?.username}!</span>
-            <button onClick={logout} style={{
-              backgroundColor: '#dc3545',
-              color: 'white',
-              border: 'none',
-              padding: '8px 16px',
-              borderRadius: '4px',
-              cursor: 'pointer'
-            }}>Выйти</button>
-          </div>
-        ) : (
-          <Link to="/login">
-            <button style={{
-              backgroundColor: '#007bff',
-              color: 'white',
-              border: 'none',
-              padding: '8px 16px',
-              borderRadius: '4px',
-              cursor: 'pointer'
-            }}>Войти</button>
-          </Link>
-        )}
-      </div>
+  {isAuthenticated ? (
+    <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+      <Link to="/profile" style={{
+        color: '#fff',
+        textDecoration: 'none',
+        padding: '8px 20px',
+        background: 'rgba(255, 255, 255, 0.1)',
+        borderRadius: '30px',
+        transition: 'all 0.3s ease',
+        fontSize: '15px',
+        fontWeight: '500'
+      }}
+      onMouseEnter={(e) => e.target.style.background = 'rgba(255, 255, 255, 0.2)'}
+      onMouseLeave={(e) => e.target.style.background = 'rgba(255, 255, 255, 0.1)'}>
+         Личный кабинет
+      </Link>
+      <button onClick={logout} style={{
+        background: 'linear-gradient(135deg, rgba(220, 53, 69, 0.8), rgba(200, 35, 51, 0.9))',
+        color: 'white',
+        border: 'none',
+        padding: '8px 20px',
+        borderRadius: '30px',
+        cursor: 'pointer',
+        fontSize: '15px',
+        fontWeight: '500',
+        transition: 'all 0.3s ease'
+      }}
+      onMouseEnter={(e) => e.target.style.transform = 'scale(1.02)'}
+      onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}>
+         Выйти
+      </button>
+    </div>
+  ) : (
+    <Link to="/login">
+      <button style={{
+        background: 'linear-gradient(135deg, #007bff, #0056b3)',
+        color: 'white',
+        border: 'none',
+        padding: '8px 25px',
+        borderRadius: '30px',
+        cursor: 'pointer',
+        fontSize: '15px',
+        fontWeight: '500',
+        transition: 'all 0.3s ease'
+      }}
+      onMouseEnter={(e) => e.target.style.transform = 'scale(1.02)'}
+      onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}>
+         Войти
+      </button>
+    </Link>
+  )}
+</div>
 
       {/* КОНТЕНТ С ОТСТУПАМИ */}
       <div style={{
