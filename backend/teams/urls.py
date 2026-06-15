@@ -7,7 +7,8 @@ from . import views
 router = DefaultRouter()
 router.register(r'tech-stacks', views.TechStackViewSet, basename='techstack')
 router.register(r'teams', views.TeamViewSet, basename='team')
-router.register(r'comments', views.CommentViewSet, basename='comment')  # добавить
+router.register(r'comments', views.CommentViewSet, basename='comment')
+router.register(r'favorites', views.FavoriteViewSet, basename='favorite')
 
 urlpatterns = [
     path('', include(router.urls)),

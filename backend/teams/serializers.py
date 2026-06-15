@@ -49,3 +49,14 @@ class CommentSerializer(serializers.ModelSerializer):
         model = Comment
         fields = ['id', 'team', 'text', 'author_name', 'created_at']
         read_only_fields = ['id', 'author_name', 'created_at']
+
+class FavoriteSerializer(serializers.ModelSerializer):
+    team_title = serializers.CharField(source='team.title', read_only=True)
+    team_stack = serializers.CharField(source='team.stack.title', read_only=True)
+    team_captain = serializers.CharField(source='team.captain.username', read_only=True)
+    team_views = serializers.IntegerField(source='team.views', read_only=True)
+
+    class Meta:
+        model = Favorite
+        fields = ['id', 'team', 'team_title', 'team_stack', 'team_captain', 'team_views', 'created_at']
+        read_only_fields = ['id', 'created_at']

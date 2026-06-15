@@ -17,6 +17,8 @@ from .serializers import (
 from .permissions import IsCaptainOrReadOnly
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
+from .models import Favorite
+from .serializers import FavoriteSerializer
 
 class TechStackViewSet(viewsets.ReadOnlyModelViewSet):
     """ViewSet для стека технологий (только чтение)"""
@@ -93,3 +95,13 @@ class CommentViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
+
+class FavoriteViewSet(viewsets.ModelViewSet):
+    serializer_class = FavoriteSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return Favorite.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
